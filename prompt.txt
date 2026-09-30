@@ -1,0 +1,13 @@
+Start a fresh FSD draft for the IPP integration, from scratch — don't just edit the existing one.
+
+Reference materials (read both before starting):
+1. The existing FSD draft (created earlier with Sonnet) — use it as a source for content/logic already captured, not as the structure to copy.
+2. ipp-workflow-context.md — the workflow/business logic summary file.
+
+Requirements:
+- Follow the team's official FSD template (Revision Summary, Distribution List, Introduction, Business Requirements, Functional Requirements FR-0001–FR-0012, each with Business Logic, Front End, Sequence Process, Business Rules, System Interfaces).
+- Reuse and cross-check the logic/details already confirmed in the two reference files — don't re-derive from scratch what's already been verified, but do re-verify against current code if anything looks outdated.
+- Same style as before: plain-language business logic (no raw code syntax, but domain terms like "response"/"callback" are fine), concrete table/entity/flag names where relevant, professional step/flow notation, concise wording.
+- Work through it FR by FR — one at a time — save each to the new md file after I approve it, then move to the next.
+
+Ask me first if anything is unclear or conflicts between the two reference files.
