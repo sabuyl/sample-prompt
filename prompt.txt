@@ -1,22 +1,5 @@
-Combining everything:
+This Implementation High-Level content is too code-literal for non-developers (QA, business stakeholders) to follow — the nested IF/ELSE structure is ambiguous (hard to tell which ELSE belongs to which IF).
 
-1. Refocus scope — only these 7 sections matter going forward, not the full FR-0001–FR-0012 list:
-   - As-Is Assessment & To-Be Process
-   - Timeout & Async Handling
-   - Support Call Back (Async)
-   - Log and Tracking
-   - CMIC360 Enhancement (IPP callback with 360 Source)
-   - Pass AH-IPP Results to CCM and AI Model
-   - Configuration (Enable/Disable)
+Keep variable names and concrete values (e.g. submitEnabled, cmic.service.ipp.submit='Y'), but restructure the conditional logic into a clear, unambiguous format — for example, numbered decision steps or indented pseudo-structure that makes nesting visually obvious (not raw run-on IF/ELSE text), or a short decision-table style list. The reader should be able to tell exactly which condition triggers which outcome without re-reading multiple times.
 
-2. Revise FR-0001 with these fixes, and apply the same standard to all sections above:
-   - Implementation High-Level table: remove "PendingCode" — it's config/data, not a method/class. For each method, don't give a vague one-line summary — show its actual simplified logic: what it validates, what conditions it checks (if/then), what it calls, and whether it returns early or continues.
-   - IppHelper.isIppEnable() specifically: describe exactly what conditions it checks and what it returns/controls.
-   - Business Rules table "Source" column: don't mix BRD references and method names in one cell — either split into two columns (BRD ref | Code ref), or drop source citations entirely (I already said not to cite sources in the FSD body).
-
-3. For the CMIC360 Enhancement section specifically:
-   - The unpend endpoint (POST /unpendWork/{caseId} → PendingCaseHelper.handleUnpendWorkFromAPI) belongs here.
-   - Describe the Case360 callback based on actual code behavior (validates, marks the pend as handled, resumes processing) — not "return early only."
-   - Add this context: there are two callback sources, IPP and Case360. Case360 is an internal service that calls CMiC and auto-unpends the case once it gets CMiC's response — that's why, for source=Case360, the flow validates then returns early (right after marking handled), rather than doing the full IPP result-processing logic.
-
-Show me each section's revised content before appending, one at a time.
+Apply this to all methods in Implementation High-Level tables going forward, not just this one.
