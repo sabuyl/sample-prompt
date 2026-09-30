@@ -1,7 +1,10 @@
-Answers:
-1. It's 2 minutes for both — the "2 seconds" in the BRD is a typo/error in that document, disregard it.
-2. The 2-minute callback limit is configured on the CMiC360 service side (external to CMiC).
-3. Don't assume the 120000 ms SYSTEMCONFIG value is confirmed — flag it as "needs verification" rather than stating it as fact.
-4. Drop the CMiC → microservice (cmic-ai-auto-process) timeout detail (300000 ms) entirely — it's out of BRD scope, don't include it.
+Hold off on FR-0006, let's go back to FR-0005 first — I want to correct the callback/timeout logic.
 
-Proceed as planned, and keep the session log updated with these decisions.
+Here's how it actually works:
+- When the call to the external AH-IPP service succeeds, cmic-app pends the case by calling CMiC360 (CMiC360 manages the pend, not just a local state).
+- After that, there are two possible callbacks, and only whichever arrives FIRST gets processed:
+  - source=IPP: AH-IPP itself calls back once it has the real result. This normally arrives before the 2-minute limit.
+  - source=Case360: CMiC360 calls back on its own when the pending time limit (2 minutes) expires — this is CMiC360's timeout firing, not AH-IPP responding.
+- So source=Case360 isn't really "AH-IPP's result" — it's CMiC360 signaling "time's up, unpend now." That's why it doesn't process an IPP result and just returns early after validating.
+
+Please revise FR-0005 to reflect this correctly before moving on to FR-0006. If anything here is unclear or conflicts with what you traced in code, ask me before revising.
