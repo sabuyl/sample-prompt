@@ -1,8 +1,3 @@
-This is a continuation of previous work — the chat session was lost, but progress is tracked in files.
+1. Go ahead with a fresh 3.6 FR-0006 draft in line with D17-D19. Show me before writing to either file.
 
-Read these first, in order:
-1. fsd-session-log.md — decisions made so far (D1-D19+) and resolved/open questions
-2. [IHS-7208] FSD-AH_IPP_Engine_Integration.md — the FSD content already written
-3. ipp-workflow-context.md — the workflow/business logic reference
-
-After reading, summarize back to me: which FR/sections are done, which are in progress, and any open questions still unresolved (check the log's OPEN QUESTIONS section). Don't redo or rewrite anything already completed — just confirm where we left off before continuing.
+2. For numbering (Q4): renumber the FRs sequentially now (not keeping the current gaps like 3.3, 3.5, 3.6) — settle this now rather than waiting until the end.
