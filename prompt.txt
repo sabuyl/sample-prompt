@@ -1,13 +1,14 @@
-Before writing anything, do a deep review:
-- Trace the full call chain in code from entry points down to repositories/external calls — don't just skim.
-- Compare the existing FSD draft, ipp-workflow-context.md, and the current code side by side for each FR.
-- Report: a short understanding summary, a table (Item | Old FSD | Summary | Code | Status: Match/Conflict/Missing), anything found in code but missing from both docs, and open questions. Then stop and wait for my answers.
+Answers to your open questions:
 
-After I answer, write the FSD from scratch using our team's official template (FR-0001–FR-0012, each with Business Logic, Front End, Sequence Process, Business Rules, System Interfaces) — do not adopt any other structure.
+1. AHIPP_HEADER_CONFIG is the correct source for CE/DRG/SC flags. I'm attaching an Excel file "AH-IPP Calling step" with the actual config rows — use it as reference.
+2. The async endpoint always returns 200 unless it errors. The code only pends on 200 — confirmed correct, no other pend condition.
+3. Yes, AH-IPP echoes back our submissionId as traceId in the response/callback.
+4. Timeout values are documented in the BRD — I'm attaching that file too, use it instead of guessing or describing "as-is with no timeout."
+5. cmic.microservice.ipp.url is fixed per environment (separate config file per SIT/UAT/PROD), not overridden at deploy time.
+6. FR-0009 (CMiC360 Enhancement) covers the IPP callback branch with source=Case360: when this callback arrives, CMiC just returns early (no further processing) so CMiC360 can unpend the case itself.
+7. The save-result logic was implemented by someone else — don't need to dig deep into it. AHIPPLIST is the data sent to CCM and the AI model; keep FR-0008/FR-0010 split as in the old draft, just get AHIPPLIST's role right.
+8. Don't include known defects/security findings in the FSD.
+9. Keep "Implementation High-Level" as its own subsection under each FR, but format it as a 2-column table (Specification | Description) — left column: method/class name, right column: short purpose — not a bullet list.
+10. Overwrite the existing file [IHS-7208] FSD-AH_IPP_Engine_Integration.md. Do NOT use ipp-workflow-context.md §1–2 as the source for FR-0001/FR-0002 — since those have no direct code source, leave them flagged appropriately instead (don't invent a source).
 
-Formatting rules:
-- Prose for purpose/reasoning, short notation (->, =, IF/THEN) for precise conditions, Mermaid diagrams for sequence/flow/state, tables for field/status/config mappings.
-- Tag each rule with its source (ClassName.methodName) where useful.
-- Never invent behavior not in the code — put unclear items in Open Questions instead.
-
-Work FR by FR, one at a time: review, show me, wait for approval, append to the md file. After the whole file is done, re-read it once and check numbering consistency, valid Mermaid syntax, no FR without a source, and no contradictions between sections.
+Proceed FR by FR as planned: review, show me, wait for approval, append to the file.
