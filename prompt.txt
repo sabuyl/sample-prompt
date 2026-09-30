@@ -1,6 +1,8 @@
-Answers:
-1. "Returns early" means: stop processing the current IPP callback's result-handling logic (to avoid redundant/unnecessary processing from another source calling in), NOT stopping the claim itself — the claim still continues in the background via runCallbackMethodInThreadAfterUnpendService. Revise the FR-0005 wording to reflect this precisely, not "stops the claim."
-2. Confirmed: CMiC360 unpends the case itself after receiving CMiC's response — CMiC does not call unpendWork for the Case360 branch.
-3. Confirmed: when the real AH-IPP result (source=IPP) arrives AFTER Case360 has already fired, the code doesn't use it to resume the claim, but it does still store the result (CLAIMIPP_* tables/blob files, IPPLOG SEQ=2). FR-0005 should mention that the late result is still stored, not just say "ignored" — keep the storage detail brief here and let FR-0006/FR-0007 cover the full mechanics.
+This is a continuation of previous work — the chat session was lost, but progress is tracked in files.
 
-Proceed with the planned FR-0005 revisions (Business Logic, Sequence Process, Business Rules, System Interfaces) incorporating these three clarifications.
+Read these first, in order:
+1. fsd-session-log.md — decisions made so far (D1-D19+) and resolved/open questions
+2. [IHS-7208] FSD-AH_IPP_Engine_Integration.md — the FSD content already written
+3. ipp-workflow-context.md — the workflow/business logic reference
+
+After reading, summarize back to me: which FR/sections are done, which are in progress, and any open questions still unresolved (check the log's OPEN QUESTIONS section). Don't redo or rewrite anything already completed — just confirm where we left off before continuing.
