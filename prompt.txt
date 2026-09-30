@@ -82,3 +82,21 @@ General rules:
 ## Output
 Write the FSD in Markdown to: [docs/fsd/feature-name-fsd.md]
 After finishing, re-read the whole document once and check: consistent numbering, every diagram renders as valid Mermaid, no BR/FR without a source, no conflicting statements between sections.
+
+
+----------------------------------------
+
+
+Before writing anything, do a deep review:
+- Trace the full call chain in code from entry points down to repositories/external calls — don't just skim.
+- Compare the existing FSD draft, ipp-workflow-context.md, and the current code side by side for each FR.
+- Report: a short understanding summary, a table (Item | Old FSD | Summary | Code | Status: Match/Conflict/Missing), anything found in code but missing from both docs, and open questions. Then stop and wait for my answers.
+
+After I answer, write the FSD from scratch using our team's official template (FR-0001–FR-0012, each with Business Logic, Front End, Sequence Process, Business Rules, System Interfaces) — do not adopt any other structure.
+
+Formatting rules:
+- Prose for purpose/reasoning, short notation (->, =, IF/THEN) for precise conditions, Mermaid diagrams for sequence/flow/state, tables for field/status/config mappings.
+- Tag each rule with its source (ClassName.methodName) where useful.
+- Never invent behavior not in the code — put unclear items in Open Questions instead.
+
+Work FR by FR, one at a time: review, show me, wait for approval, append to the md file. After the whole file is done, re-read it once and check numbering consistency, valid Mermaid syntax, no FR without a source, and no contradictions between sections.
