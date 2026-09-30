@@ -1,3 +1,11 @@
-1. Go ahead with a fresh 3.6 FR-0006 draft in line with D17-D19. Show me before writing to either file.
+Two additional working rules, effective immediately:
 
-2. For numbering (Q4): renumber the FRs sequentially now (not keeping the current gaps like 3.3, 3.5, 3.6) — settle this now rather than waiting until the end.
+1. Draft review format
+- When you show me a draft for review, present it in the chat in markdown format (headings, tables, bold) so it's easy to read.
+- Only after I approve, write it into the FSD file and the .txt file, converted to clean formatting for pasting into Word (no raw markdown).
+
+2. Session log (mandatory, continuous)
+- Update fsd-session-log.md immediately after every step: each confirmed decision, each answered question, each approved draft, and each file write.
+- Do not wait until the end of the task. Assume the session can be lost at any moment.
+- Each entry must include the current status and the next pending action, so a new session can resume exactly where we left off.
+- Start now by logging the two decisions I just confirmed: the fresh FR-0006 redraft per D17–D19 and the sequential FR renumbering.
