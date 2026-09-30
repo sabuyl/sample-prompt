@@ -1,11 +1,7 @@
 Answers:
-1. Row 5 flags: if the exact values aren't in the Excel, check the SQL script file for the actual config values instead of leaving "???" or a generic placeholder.
-2. SETTLECLAIM: describe it as running AFTER FWA (per the Excel), not the parallel behavior seen in code.
-3. CHECKCOVERAGE: keep both rows in the call-point matrix as-is — the Excel already lists them as two separate cases (OPD AutoPay=Yes vs No), so don't collapse into one row.
-4. Out-of-scope sections (FR-0001, 0002, 0004, 0008, 0012): remove them from the file entirely — we're not covering them in this FSD.
+1. It's 2 minutes for both — the "2 seconds" in the BRD is a typo/error in that document, disregard it.
+2. The 2-minute callback limit is configured on the CMiC360 service side (external to CMiC).
+3. Don't assume the 120000 ms SYSTEMCONFIG value is confirmed — flag it as "needs verification" rather than stating it as fact.
+4. Drop the CMiC → microservice (cmic-ai-auto-process) timeout detail (300000 ms) entirely — it's out of BRD scope, don't include it.
 
-Also:
-- Keep formatting the whole file so it pastes cleanly into Word — no markdown syntax (**, ##, backticks, pipe tables), plain headings, simple bullets/dashes/numbered lists instead.
-- Create a session log file (fsd-session-log.md) in the current project folder, and keep it updated as we go: decisions made and why, open questions with status, and which sections are done vs. pending. Read this log first at the start of any new session. Keep entries short.
-
-Proceed as planned.
+Proceed as planned, and keep the session log updated with these decisions.
