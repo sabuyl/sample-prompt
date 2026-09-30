@@ -1,10 +1,6 @@
-Hold off on FR-0006, let's go back to FR-0005 first — I want to correct the callback/timeout logic.
+Answers:
+1. "Returns early" means: stop processing the current IPP callback's result-handling logic (to avoid redundant/unnecessary processing from another source calling in), NOT stopping the claim itself — the claim still continues in the background via runCallbackMethodInThreadAfterUnpendService. Revise the FR-0005 wording to reflect this precisely, not "stops the claim."
+2. Confirmed: CMiC360 unpends the case itself after receiving CMiC's response — CMiC does not call unpendWork for the Case360 branch.
+3. Confirmed: when the real AH-IPP result (source=IPP) arrives AFTER Case360 has already fired, the code doesn't use it to resume the claim, but it does still store the result (CLAIMIPP_* tables/blob files, IPPLOG SEQ=2). FR-0005 should mention that the late result is still stored, not just say "ignored" — keep the storage detail brief here and let FR-0006/FR-0007 cover the full mechanics.
 
-Here's how it actually works:
-- When the call to the external AH-IPP service succeeds, cmic-app pends the case by calling CMiC360 (CMiC360 manages the pend, not just a local state).
-- After that, there are two possible callbacks, and only whichever arrives FIRST gets processed:
-  - source=IPP: AH-IPP itself calls back once it has the real result. This normally arrives before the 2-minute limit.
-  - source=Case360: CMiC360 calls back on its own when the pending time limit (2 minutes) expires — this is CMiC360's timeout firing, not AH-IPP responding.
-- So source=Case360 isn't really "AH-IPP's result" — it's CMiC360 signaling "time's up, unpend now." That's why it doesn't process an IPP result and just returns early after validating.
-
-Please revise FR-0005 to reflect this correctly before moving on to FR-0006. If anything here is unclear or conflicts with what you traced in code, ask me before revising.
+Proceed with the planned FR-0005 revisions (Business Logic, Sequence Process, Business Rules, System Interfaces) incorporating these three clarifications.
