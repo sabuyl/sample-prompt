@@ -1,16 +1,21 @@
-Answers to your open questions:
+Answer to your FR-0010 question:
 
-Q10 (FR renumbering): Option A. Renumber section numbers only (3.1 → 3.7). Keep the FR IDs unchanged (FR-0003, FR-0005, FR-0006, FR-0007, FR-0009, FR-0010, FR-0011), since the other FRs (FR-0001/0002/0004/0008/0012) still exist outside my scope and the IDs must stay traceable to the BRD and Excel.
+It is a data hand-off, not just sequencing. AH-IPP results are passed to CCM and the AI Model inside the request payload, in the field AHIPPLIST.
 
-Q11 (formatting): Option A. The clean Word formatting applies to the .txt file only. The .md file keeps Markdown with Mermaid diagrams, as decided in D11/D12.
+How it works:
+- When calling CCM and the AI Model, CMiC builds the request payload with constructAiObject.
+- AHIPPLIST is a field of AIOBJECT. Inside constructAiObject, there is logic that sets AHIPPLIST:
+  1. Get the result file name from IPPLOG (SEQ value to be confirmed from code).
+  2. Download the document from Azure Storage Account.
+  3. Parse the content from string to JSON.
+  4. Set the parsed JSON into AHIPPLIST.
 
-Q3 (saving the draft): Do not create a scratch file. Write the current FR-0006 draft directly into the FSD files now:
-- .md: Markdown with Mermaid diagrams.
-- .txt: clean formatting for pasting into Word.
-- Mark the section status as "draft, pending approval". I will review it in the file.
+Note: this block in constructAiObject is currently commented out because of a related issue. That is why you did not find it. Use it as the source for this section, but do not mention in the FSD that it is commented out or that there is an issue (known defects stay out of the FSD).
 
-Also:
-- I see a change to ipp-workflow-context.md (+20 −3). Explain what you changed and why before I accept it. Do not modify reference files without asking me first.
-- Reminder: ask me one question at a time. Do not bundle multiple questions in a single message.
+Please update 3.6 FR-0010:
+- Business Logic: describe the AHIPPLIST hand-off above in plain language, alongside the existing sequencing (IPP → CCM → FWA → AI Model). Clarify that the data comes from the result file referenced in IPPLOG, not from the CLAIMIPP_* tables.
+- Implementation High-Level: add constructAiObject with the 4 numbered steps above. Keep the other rows.
+- Remove the "Note on scope" and "Question" blocks from the section.
+- I am not sure which IPPLOG SEQ value the file name is taken from. Find it in the commented-out code in constructAiObject and tell me the SEQ value and what that SEQ represents (request or result, sync or async callback) before writing. Do not assume.
 
-Log all three answers in fsd-session-log.md immediately (as new decisions), then update the log again after writing FR-0006 to the files.
+Log this answer as a new decision in fsd-session-log.md immediately, then update the log again after the section is written.
