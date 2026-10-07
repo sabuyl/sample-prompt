@@ -1,0 +1,20 @@
+Context Review the highlighted method in ClaimCallbackHandlingServiceImpl.java, focusing on opdFlag and the other flags passed as method parameters.
+
+Problem
+Currently, opdFlag is computed inside the method like this
+
+    final boolean opdFlag = ClaimsSubmissionHelper.isOpd(claim.getTreatmentType());
+
+This is incorrect for the confirmMedical() flow on the Eligibility screen. In that flow, opdFlag should always be false. But because the method recalculates it from the treatment type, an OPD claim going through confirmMedical() ends up with opdFlag = true, which is wrong. Please trace the code to confirm this.
+
+Additional constraint
+A claim can be pended between confirmMedical() and a later callback into CMIC that continues processing (for example, the IPP callback). When that happens, we already save the CmicClaim into the cmicState column of the claim_callback_handling table, and later callbacks restore it from there. So the correct opdFlag value must survive this pendresume cycle, not just be correct within a single call.
+
+What I need
+1. Analyze the current code path for confirmMedical() and the resume path (e.g., the IPP callback), and identify where opdFlag is computed and used.
+2. Suggest how to carry the correct flag through the whole flow. Options to evaluate
+   - Pass opdFlag explicitly as a method parameter from the caller instead of recalculating it.
+   - Store it on CmicClaim or CmicFlag so it is persisted in cmicState and restored on resume.
+3. Recommend one approach with reasons, show the code changes needed, and note any other callers of this method that would be affected.
+
+Do not change behavior for other flows that currently rely on isOpd(treatmentType) unless necessary; call out any such impact.
