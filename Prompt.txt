@@ -1,14 +1,44 @@
-Follow-up: Now check the method at ClaimHelper.java lines 2202-2204, specifically the other parameters: iUpdateFlag, processClaimOutput, and ipdStpFlag.
+Rewrite the CMIC360 Enhancement section (FR-0009) to follow exactly the structure below. This section intentionally differs from the other FRs: follow this layout even where it conflicts with the general style rules (e.g. BRD references are allowed here, and sections not listed below are omitted).
 
-Trace this method and every method it calls throughout the processing flow (including the confirmMedical() path and the resume path after a pended claim, e.g., the IPP callback). For each parameter:
-1. Where is it initialized, and is the value correct for each flow that calls this method?
-2. Is it recalculated or overwritten anywhere downstream, the same way opdFlag was recalculated from the treatment type?
-3. Is it still used anywhere else, or is it now unused or redundant?
-4. Does its value survive the pend/resume cycle (saved in cmicState and restored correctly), or is it lost or recomputed on resume?
+Structure:
 
-If you find any issue:
-- Show the exact code location (class, method, line) and the relevant snippet.
-- Explain which flow produces the wrong value and why.
-- Propose a fix, consistent with the approach chosen for opdFlag.
+[Section number] FR-0009: CMIC360 Enhancement
+(Ref: BRD Section 5.6 CMIC360 Enhancement, 5.6.1 Add new pending code for AH-IPP(async), 5.6.2 Additional Rules for Case Routing, 5.6.3 Un-pends case and Trigger)
 
-Do NOT modify any code yet. Only report findings and proposed fixes. I will review them and confirm before any changes are made.
+[x.1] Business Logic
+N/A
+
+[x.2] Front End
+N/A
+
+[x.3] Sequence Process
+[x.3.1] Additional Rules for Case Routing (BRD 5.6.2)
+- One-sentence rule: CMIC360 allows a case to be routed to Pending if the same claim number's Admission phase is still in the "WaitingDischarge" activity.
+- UAT Scenario: numbered steps
+  1. Create a claim in the Admission phase with OCR, Gen-AI, AH-IPP, FWA.
+  2. Ensure the Admission phase remains in the WaitingDischarge activity.
+  3. Submit a Discharge transaction using the same Claim Number.
+  4. Verify that CMIC360 routes the Discharge case to Pending.
+- Expected Result: one sentence.
+
+[x.3.2] Un-pends Case and Trigger (BRD 5.6.3)
+- Short description: if the lock case time limit is exceeded, CMIC360 calls CMiC's CallBackService. CMiC360 un-pends the case and then triggers CMiC. CMiC immediately responds with success at the first step and performs other processing as a background task.
+- Sample request structure: JSON block. Take the full field list from the actual callback request in the code (it includes "source": "Case360" and "caseId").
+
+[x.4] Business Rules
+[x.4.1] Add New Pending Code for AH-IPP (Async) (BRD 5.6.1)
+Table with columns: Claim Type | Pending Name | Time Limit | Pending Code
+- IPD cashless discharge | IPP Call Pending IPD Cashless Claim | 2 mins | 18
+- OPD cashless discharge | IPP Call Pending OPD Cashless Claim | 2 mins | 19
+- IPD cash discharge | IPP Call Pending IPD Cash Claim | 2 mins | 20
+- OPD cash discharge | IPP Call Pending OPD Cash Claim | 2 mins | 21
+
+Note: Pending code created on UAT on 23 July 2026 (@Tanasarn.Thunariyakul).
+[Placeholder: screenshot of FD_PENDINGREASONS query. I will insert the image manually in Word.]
+
+Rules:
+- Keep the content consistent with the decisions already logged for FR-0005 and FR-0006 (first-callback-wins, source=Case360 is the pending-timeout signal, CMiC does not call unpendWork).
+- Do not add Implementation High-Level, System Interfaces, or any other subsection not listed above.
+- If anything in the code contradicts this content, ask me one question at a time before writing.
+
+Show me the draft in markdown in the chat first. Log this decision in fsd-session-log.md immediately.
