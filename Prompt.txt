@@ -1,44 +1,70 @@
-Rewrite the CMIC360 Enhancement section (FR-0009) to follow exactly the structure below. This section intentionally differs from the other FRs: follow this layout even where it conflicts with the general style rules (e.g. BRD references are allowed here, and sections not listed below are omitted).
+# Task: Analyze BRD requirements and cross-check with the codebase
 
-Structure:
+## Context
+I am a backend developer (Java/Spring Boot) on the CMIC project (services: cmic-app and cmic-ai).
+I have one document: `[BRD_focus.docx]`, which contains the 3 sections I am responsible for:
+- [Phases 1][CMIC-API] FR-01: Centralized Service...
+- [Phases 1][CMIC-API] FR-02: Special Business...
+- [Phases 1][CMIC-API] FR-03.1: Customer Preference...
 
-[Section number] FR-0009: CMIC360 Enhancement
-(Ref: BRD Section 5.6 CMIC360 Enhancement, 5.6.1 Add new pending code for AH-IPP(async), 5.6.2 Additional Rules for Case Routing, 5.6.3 Un-pends case and Trigger)
+These 3 sections were extracted from a larger BRD, so they may reference other sections, terms, or rules that are not included in this file.
 
-[x.1] Business Logic
-N/A
+## Strict rules
+- DO NOT guess, assume, or infer anything that is not explicitly stated in the document or verifiable in the code.
+- If something is mentioned in the document and may exist in the code (entities, tables, APIs, configs, enums, status codes, services), SEARCH the codebase and cite what you find.
+- If the document references another BRD section, term, or rule that is not in this file, try to find it in the code first. If it still cannot be confirmed, record it as a question. Do not explain it from assumption.
+- If, after reading the document AND searching the code, something is still unclear, ambiguous, missing, or contradictory, DO NOT fill the gap yourself. Put it in the questions file.
+- If the document and the code disagree, do not decide which is correct. Record it as a question.
+- Every statement in the explanation file must have a source:
+  - Document: section number/title (and table/figure name if applicable)
+  - Code: file path + class/method name
+- Use plain, simple English. Explain business terms the first time they appear.
 
-[x.2] Front End
-N/A
+## Process
+1. Read `[BRD_focus.docx]` fully, section by section.
+2. For each section, identify: purpose, actors, inputs, outputs, business rules, validations, flows, exceptions, and dependencies on other sections.
+3. List every reference to content outside this file (other FRs, stories, glossary terms, external systems).
+4. For every technical element and external reference, search the codebase and note whether it exists, partially exists, or does not exist yet.
+5. Classify each finding as either "Clear" (go to file 1) or "Unclear" (go to file 2). Nothing may be left unclassified.
 
-[x.3] Sequence Process
-[x.3.1] Additional Rules for Case Routing (BRD 5.6.2)
-- One-sentence rule: CMIC360 allows a case to be routed to Pending if the same claim number's Admission phase is still in the "WaitingDischarge" activity.
-- UAT Scenario: numbered steps
-  1. Create a claim in the Admission phase with OCR, Gen-AI, AH-IPP, FWA.
-  2. Ensure the Admission phase remains in the WaitingDischarge activity.
-  3. Submit a Discharge transaction using the same Claim Number.
-  4. Verify that CMIC360 routes the Discharge case to Pending.
-- Expected Result: one sentence.
+## Output: exactly 2 Markdown files
 
-[x.3.2] Un-pends Case and Trigger (BRD 5.6.3)
-- Short description: if the lock case time limit is exceeded, CMIC360 calls CMiC's CallBackService. CMiC360 un-pends the case and then triggers CMiC. CMiC immediately responds with success at the first step and performs other processing as a background task.
-- Sample request structure: JSON block. Take the full field list from the actual callback request in the code (it includes "source": "Case360" and "caseId").
+### File 1: `requirements-explained.md`
+Only information that is clear and supported by a source. Structure:
 
-[x.4] Business Rules
-[x.4.1] Add New Pending Code for AH-IPP (Async) (BRD 5.6.1)
-Table with columns: Claim Type | Pending Name | Time Limit | Pending Code
-- IPD cashless discharge | IPP Call Pending IPD Cashless Claim | 2 mins | 18
-- OPD cashless discharge | IPP Call Pending OPD Cashless Claim | 2 mins | 19
-- IPD cash discharge | IPP Call Pending IPD Cash Claim | 2 mins | 20
-- OPD cash discharge | IPP Call Pending OPD Cash Claim | 2 mins | 21
+# Requirements Explained
+## Overview
+Short summary of what the 3 sections aim to achieve together.
 
-Note: Pending code created on UAT on 23 July 2026 (@Tanasarn.Thunariyakul).
-[Placeholder: screenshot of FD_PENDINGREASONS query. I will insert the image manually in Word.]
+## FR-01: [Title]
+### Purpose
+### Actors / Systems involved
+### Flow (step by step)
+### Business rules & validations
+### Data (fields, tables, entities)
+### Related code
+| Item | Status (Exists / Partial / Not found) | Code reference |
+### Sources
 
-Rules:
-- Keep the content consistent with the decisions already logged for FR-0005 and FR-0006 (first-callback-wins, source=Case360 is the pending-timeout signal, CMiC does not call unpendWork).
-- Do not add Implementation High-Level, System Interfaces, or any other subsection not listed above.
-- If anything in the code contradicts this content, ask me one question at a time before writing.
+(Repeat the same structure for FR-02 and FR-03.1)
 
-Show me the draft in markdown in the chat first. Log this decision in fsd-session-log.md immediately.
+## Cross-section relationships
+How FR-01, FR-02 and FR-03.1 relate to each other (only if stated in the document).
+
+### File 2: `open-questions.md`
+Everything that is unclear, missing, ambiguous, or contradictory. Structure:
+
+# Open Questions
+| ID | Section | Question | Source location | What I checked (doc/code) | Why it is unclear | Impact if not answered | Status |
+|----|---------|----------|-----------------|---------------------------|-------------------|------------------------|--------|
+| Q-01 | FR-01 | ... | Section X, Table Y | Searched `XxxService`, not found | ... | ... | Open |
+
+Group questions by section. Use these tags where relevant:
+- [CONFLICT] – the document and the code disagree
+- [EXTERNAL-REF] – the document refers to content outside this file that could not be confirmed
+
+## Final check before finishing
+- Every statement in File 1 has a source.
+- No assumption or guess appears in File 1.
+- Every unclear point is in File 2.
+- At the end of your reply, give a short summary: number of items explained per section and number of open questions per section.
