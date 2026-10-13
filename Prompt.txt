@@ -1,70 +1,38 @@
-# Task: Analyze BRD requirements and cross-check with the codebase
+Root cause: wrong matching key in updateClaimPaymentAfterAssessClaim
 
-## Context
-I am a backend developer (Java/Spring Boot) on the CMIC project (services: cmic-app and cmic-ai).
-I have one document: `[BRD_focus.docx]`, which contains the 3 sections I am responsible for:
-- [Phases 1][CMIC-API] FR-01: Centralized Service...
-- [Phases 1][CMIC-API] FR-02: Special Business...
-- [Phases 1][CMIC-API] FR-03.1: Customer Preference...
+The method loops through every ClaimPayment in the DB and, for each one, loops through every payment from the UI screen. It decides which screen row belongs to which DB row by matching only policyNo + productType.
 
-These 3 sections were extracted from a larger BRD, so they may reference other sections, terms, or rules that are not included in this file.
+That combination is not unique. In claim C500107070 there are two plans with the same product type CLINICAL:
 
-## Strict rules
-- DO NOT guess, assume, or infer anything that is not explicitly stated in the document or verifiable in the code.
-- If something is mentioned in the document and may exist in the code (entities, tables, APIs, configs, enums, status codes, services), SEARCH the codebase and cite what you find.
-- If the document references another BRD section, term, or rule that is not in this file, try to find it in the code first. If it still cannot be confirmed, record it as a question. Do not explain it from assumption.
-- If, after reading the document AND searching the code, something is still unclear, ambiguous, missing, or contradictory, DO NOT fill the gap yourself. Put it in the questions file.
-- If the document and the code disagree, do not decide which is correct. Record it as a question.
-- Every statement in the explanation file must have a source:
-  - Document: section number/title (and table/figure name if applicable)
-  - Code: file path + class/method name
-- Use plain, simple English. Explain business terms the first time they appear.
+claimPaymentId	planId	productType (product)	Decision from UI
+7618119	4156491	CLINICAL (CLINICAL)	10 (Approve)
+7618121	4156493	CLINICAL (OPDTelemed)	91
 
-## Process
-1. Read `[BRD_focus.docx]` fully, section by section.
-2. For each section, identify: purpose, actors, inputs, outputs, business rules, validations, flows, exceptions, and dependencies on other sections.
-3. List every reference to content outside this file (other FRs, stories, glossary terms, external systems).
-4. For every technical element and external reference, search the codebase and note whether it exists, partially exists, or does not exist yet.
-5. Classify each finding as either "Clear" (go to file 1) or "Unclear" (go to file 2). Nothing may be left unclassified.
+Because both rows match on policyNo + productType, each CLINICAL DB row is updated twice, once with each screen value. The logs show this: claimPaymentId 7618119 and 7618121 each appear twice, once with eligibility=10 and once with eligibility=91. Whichever screen row is processed last wins, so the correct value 10 can be overwritten by 91.
 
-## Output: exactly 2 Markdown files
+Impact
 
-### File 1: `requirements-explained.md`
-Only information that is clear and supported by a source. Structure:
+When a plan that should be approved (10) is overwritten to 91, its approvedAmt is reset to 0. The claim then has no approved amount on the plan it should have paid, and the settlement fails.
 
-# Requirements Explained
-## Overview
-Short summary of what the 3 sections aim to achieve together.
+Fix
 
-## FR-01: [Title]
-### Purpose
-### Actors / Systems involved
-### Flow (step by step)
-### Business rules & validations
-### Data (fields, tables, entities)
-### Related code
-| Item | Status (Exists / Partial / Not found) | Code reference |
-### Sources
+Match on a unique key. planId is unique per claim payment and is already available on both sides (planId[4156491] appears in the UI log), so it should be part of the condition. Stop the inner loop once a match is found:
 
-(Repeat the same structure for FR-02 and FR-03.1)
+java
+for (ClaimPayment payment : paymentList) {
+    for (BenefitDeterminationPaymentListForm screenPayment : screenPayments) {
+        String screenPolNo = screenPayment.getPolicyNo().split("/")[0];
+        if (payment.getPolicyNo().equals(screenPolNo)
+                && Objects.equals(payment.getPlanId(), screenPayment.getPlanId())) {
+            ClaimPayment claimPayment = claimPaymentRepository
+                    .findClaimPaymentByClaimPaymentId(payment.getClaimPaymentId());
+            claimPayment.setEligibility(screenPayment.getClaimsDecision());
+            claimPaymentRepository.updateClaimPayment(claimPayment);
+            break;
+        }
+    }
+}
 
-## Cross-section relationships
-How FR-01, FR-02 and FR-03.1 relate to each other (only if stated in the document).
+If planId has a different type on the two classes (for example String and Long), convert one before comparing. If the screen form also carries claimPaymentId, matching on that is even safer. The commented-out setClaimPaymentId line suggests someone once planned to do that.
 
-### File 2: `open-questions.md`
-Everything that is unclear, missing, ambiguous, or contradictory. Structure:
-
-# Open Questions
-| ID | Section | Question | Source location | What I checked (doc/code) | Why it is unclear | Impact if not answered | Status |
-|----|---------|----------|-----------------|---------------------------|-------------------|------------------------|--------|
-| Q-01 | FR-01 | ... | Section X, Table Y | Searched `XxxService`, not found | ... | ... | Open |
-
-Group questions by section. Use these tags where relevant:
-- [CONFLICT] – the document and the code disagree
-- [EXTERNAL-REF] – the document refers to content outside this file that could not be confirmed
-
-## Final check before finishing
-- Every statement in File 1 has a source.
-- No assumption or guess appears in File 1.
-- Every unclear point is in File 2.
-- At the end of your reply, give a short summary: number of items explained per section and number of open questions per section.
+One small correction to your note: you wrote “92”, but both the logs and the DB show 91.
