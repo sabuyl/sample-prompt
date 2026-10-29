@@ -1,29 +1,25 @@
-Create a review document for IHS-7361 (Policy Per Life popup in cmic-app), in the style of a short FSD, so I can review the whole change in one file. Reply in English. Do NOT change any source, test, config or build file. Do not start any step.
+Rewrite IHS-7361_REVIEW.md so that a developer who does not know this domain can read it easily. Reply in English. Do NOT change any source, test, config or build file, and do not change any fact: only the wording and the layout.
 
-## WHERE
-- One Markdown file: IHS-7361_REVIEW.md, in the same folder as the IHS-7361 progress log. Outside anything Git tracks; show `git status` to prove it. If you cannot write there, stop and ask me.
+## STYLE RULES
+1. Plain words and short sentences (one idea per sentence). No shorthand. Do not use "->" or ":" as a replacement for a sentence: write "returns", "becomes", "if ... then ...".
+2. Do not use unexplained jargon or abbreviations (for example "TreeSet", "ODS order", "first name wins", "chunks", "batch"). Either use a simple phrase ("count it once", "in the order they came from ODS", "use the first name found", "in groups of 2,000", "one lookup for many rows") or explain the term the first time in a GLOSSARY at the top. Keep real class, method, field and table names exactly as in the code.
+3. In the "Logic inside" column write numbered steps, maximum 5 steps per method, each step one short sentence. If a method needs more than 5, describe it in a short paragraph under the table.
+4. For every method, add a one-sentence "In simple words" summary BEFORE the steps. Describe what the method does for the user, not how it is coded.
+5. Say what happens in the failure and blank cases in plain words (for example "the column stays blank and the popup still opens").
+6. Move file names and line numbers into a separate "Where" column, so the explanation is not full of references.
+7. Use one example with real-looking but fake values (placeholders such as <POLICY_NO>) in each of these places: product short name, deduct total, deduct accumulate (including the red case), status split.
 
-## HOW TO BUILD IT (accuracy rules)
-- Read the real code. Use `git status`, `git diff` and the files on disk, not memory and not the log alone. Where the log and the code disagree, trust the code and tell me about the difference.
-- Every statement about behavior must carry a reference: file name and line numbers (or method name). If you could not verify something, write "unverified" instead of guessing.
-- Describe what the code DOES now, including anything that differs from the BRD or from my earlier decisions. Do not describe the intended design as if it were the result.
-- No credentials, connection strings, real policy numbers, claim numbers, names or other personal data. Use placeholders such as <POLICY_NO>.
-- Simple English, short sentences. Keep class, method, table and file names exactly as in the code.
+## STRUCTURE AND LENGTH
+- Add a GLOSSARY at the top (max 20 terms: policy, plan, product, CS, OL, PA, GPSE, ODS, COAST, deductible, policy year, accumulated, batch lookup, and any other term you use).
+- Add a one-page OVERVIEW before everything else: what changed for the user, the 5 main steps of the flow in plain words, and the 5 most important rules.
+- Target at most 4,000 words in the main part. Put long details (full SQL, long tables, timing logs) in an APPENDIX at the end. If the main part is still longer, cut repeated explanations; do not cut any fact that a reviewer needs.
+- Keep all 12 sections of the original structure and the reviewer checklist.
 
-## SECTIONS (in this order)
-1. SUMMARY: the ticket in 5 lines (what the popup showed before, what it shows now), the modules involved, and the current status of each step (done / in progress / not started).
-2. REQUIREMENT MAPPING: a table: BRD item or decision (D1 to D10 and later ones, with the BA replies that changed them) | how the code implements it | where (file:line) | covered by which tests | status. Include every place where the implementation differs from the original BRD or from a decision I made, with the reason and who approved it (quote from the log).
-3. FILES CHANGED: a table: Tag ([MAIN] / [TEST] / [JS-HTML] / [SCRIPT]) | full path | NEW or MODIFIED | what changed in 1 to 2 lines | approx. lines added and removed. Add a second table "Modified in git but NOT part of this ticket (do not commit)" with the reason for each file you can prove, and "unknown owner" for the rest.
-4. END-TO-END FLOW: numbered steps from the user clicking the popup button to the rows drawn in the two tables. For each step: which page or class calls which method, with what input, what comes back, and whether it hits the database or ODS/COAST. Show the real call chain (for example the JS function, the endpoint, the controller method, the service method, the helper methods). Show the flow twice: (a) the normal case, (b) the failure cases (a lookup returns nothing, a lookup throws, empty list, null claim number), and say what the user sees. Add a simple text diagram of the call chain. If you can, also add a Mermaid sequence diagram in a code block.
-5. FUNCTION TABLE: one row per NEW or CHANGED method or JS function (including constants, helper methods, repository methods and SQL). Columns: Class | Method (signature) | Inputs -> output | Logic inside (numbered, short, in plain English, including edge cases and the exact rules: statuses, line-of-business rules, separators, rounding, red threshold, chunk size) | Purpose / why it exists | Called by | Calls | Touches DB? (query count) | REUSE / EXTEND / NEW | Tests. Group the rows by layer: JS/UI, controller/endpoint, service, helper, repository/SQL, model/constants.
-6. DATA MODEL: the response structure (activePolicy and terminatePolicy lists, every field of PolicyperLifeBO that is new, which fields are hidden from the JSON), with one JSON example using placeholders.
-7. DATABASE AND PERFORMANCE: every query this change adds or reuses (table, key columns, batch size, chunking), the number of queries per popup open, whether it grows with the number of policies, indexes relied on, and the measured timings recorded in the log (quote the numbers and the machine/environment, and say which part of the time is in existing code such as retrieveFromODS).
-8. DECISIONS AND ASSUMPTIONS: a table: decision/assumption | default used | source (BRD, BA reply with date, my choice) | symptom that would show it is wrong | status (confirmed / provisional).
-9. TESTS: a table: test class | path | number of tests | what it covers | how it is run (JUnit only, no Mockito, fakes) | last result with the date. List what is NOT automated (JS rendering, SQL logic, the four pages) and the manual checks that replace it, with the manual checklist.
-10. IMPACT AND RISKS: what existing behavior could change (the 4 pages that share the popup, the AI flows ClaimHelper and cmic-ai AiHelper, other callers of the V2 method), what was verified and how, and what was not verified. Include known limits (for example locale, status values, blank-status rows).
-11. OPEN ITEMS: BA questions still open (each with a numeric example and your recommended default), technical items waiting on me, and things I must do before committing (UAT checks, git add for files that are staged with later changes, files that must never be committed).
-12. REVIEWER CHECKLIST: 10 to 15 concrete checks a reviewer can do in order (open this file, compare to this method, run this SQL on dev, click this page), each with the expected result.
+## ACCURACY
+- Keep every reference to file and line, only in the "Where" column. Re-check the line numbers against the current code.
+- Where you are not sure what a method does, write "unverified". Do not simplify by guessing.
+- After rewriting, list: (a) every sentence you could not explain simply and why, (b) anything where the old text and the code disagreed.
+- Update the IHS-7361 status and journal logs with one line saying the review document was rewritten in plain words.
 
 ## OUTPUT
-- Write the file, then show me: the full path, the table of contents, and a list of everything you marked "unverified" or found different from the log.
-- Update the IHS-7361 status and journal logs with one line saying the review document was created.
+Write the file, then show me the full path, the new word count, the glossary and the rewritten section 5.4 (Helper table), then wait.
