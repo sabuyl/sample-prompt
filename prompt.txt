@@ -1,25 +1,11 @@
-Rewrite IHS-7361_REVIEW.md so that a developer who does not know this domain can read it easily. Reply in English. Do NOT change any source, test, config or build file, and do not change any fact: only the wording and the layout.
+Focus ONLY on Deduct Total. Ignore Deduct Accumulate. Reply in English. Do NOT change any file.
 
-## STYLE RULES
-1. Plain words and short sentences (one idea per sentence). No shorthand. Do not use "->" or ":" as a replacement for a sentence: write "returns", "becomes", "if ... then ...".
-2. Do not use unexplained jargon or abbreviations (for example "TreeSet", "ODS order", "first name wins", "chunks", "batch"). Either use a simple phrase ("count it once", "in the order they came from ODS", "use the first name found", "in groups of 2,000", "one lookup for many rows") or explain the term the first time in a GLOSSARY at the top. Keep real class, method, field and table names exactly as in the code.
-3. In the "Logic inside" column write numbered steps, maximum 5 steps per method, each step one short sentence. If a method needs more than 5, describe it in a short paragraph under the table.
-4. For every method, add a one-sentence "In simple words" summary BEFORE the steps. Describe what the method does for the user, not how it is coded.
-5. Say what happens in the failure and blank cases in plain words (for example "the column stays blank and the popup still opens").
-6. Move file names and line numbers into a separate "Where" column, so the explanation is not full of references.
-7. Use one example with real-looking but fake values (placeholders such as <POLICY_NO>) in each of these places: product short name, deduct total, deduct accumulate (including the red case), status split.
+BRD: "Deduct Total: System get value from product setup -> Get setup amount of Deduct in policy year" and "Retrieval Deduct limit amount of policy year".
+Today applyDeductTotals reads Plan.deductLimit (deductInd = 'Y', limit > 0) and does not use any date or policy year.
 
-## STRUCTURE AND LENGTH
-- Add a GLOSSARY at the top (max 20 terms: policy, plan, product, CS, OL, PA, GPSE, ODS, COAST, deductible, policy year, accumulated, batch lookup, and any other term you use).
-- Add a one-page OVERVIEW before everything else: what changed for the user, the 5 main steps of the flow in plain words, and the 5 most important rules.
-- Target at most 4,000 words in the main part. Put long details (full SQL, long tables, timing logs) in an APPENDIX at the end. If the main part is still longer, cut repeated explanations; do not cut any fact that a reviewer needs.
-- Keep all 12 sections of the original structure and the reviewer checklist.
-
-## ACCURACY
-- Keep every reference to file and line, only in the "Where" column. Re-check the line numbers against the current code.
-- Where you are not sure what a method does, write "unverified". Do not simplify by guessing.
-- After rewriting, list: (a) every sentence you could not explain simply and why, (b) anything where the old text and the code disagreed.
-- Update the IHS-7361 status and journal logs with one line saying the review document was rewritten in plain words.
-
-## OUTPUT
-Write the file, then show me the full path, the new word count, the glossary and the rewritten section 5.4 (Helper table), then wait.
+1. Look at the Plan entity and table: is there any effective date, expiry date, policy year, version or similar column? Can the same plan code have several deduct rows with different limits for different policy years? Answer with evidence, and give me a read-only SQL for the dev DB that counts plan codes with deductInd = 'Y' and more than one distinct limit.
+2. If the limit does NOT vary by year: say so with the evidence, and confirm the current code is correct for the BRD.
+3. If it CAN vary by year: what does applyDeductTotals do today for a plan code with rows for several years (pick one, mix them, or leave the Total blank because it sees more than 1 limit)? Show it with a numeric example: plan AIN7 with limit 100,000 for 2025 and 120,000 for 2026; a claim on 15-Jan-2026, one on 20-Dec-2025 and one on 01-Jan-2026. What does the popup show today and what should it show according to the BRD?
+4. Which date would define the policy year for the Total, and where would it come from for a policy that is NOT on the current claim (no ClaimPolicyPlan row)? Quote the existing code that gives that date, if any.
+5. Does the existing method findDeductLimitByPlanCode (or any other existing code) already pick the limit by policy year? If yes, can Step 5 reuse it instead of the current logic?
+6. Your recommendation: keep as is, or change Total to use the policy year. State the effect on the number of queries (it must stay constant). If a change is needed, do not code it: add it to the open items and propose a solution gate.
