@@ -1,1 +1,45 @@
-Add this to the style rules of the readability refactor: do not nest method calls when the inner call is not trivial. Assign the result of the inner call to a well-named local variable first, then use it (for example: Map<String, BigDecimal> accumulatedInChunk = claimDeductRepository.findDeductAccumulateByPolicyNos(chunk, asOfDate); accumulateByPolicyNo.putAll(accumulatedInChunk);). Use a local variable when there are two or more nested calls on one line, when the value is useful to inspect in the debugger or to null-check, when it is reused, or when the line is longer than about 100 characters. Keep trivial one-step calls like String.join(", ", names) as they are. Never change when or how many times a method is called: a variable must not cause an extra database query or move a call across a null check or a try/catch. Show the BEFORE/AFTER of each such change in the chat first, as in the other refactors.
+New task (not the Policy Per Life ticket). I want a document that explains how CMIC works today, from claim submission to the AI step, so the team understands the flow and can debug and track bugs. Reply in English. Do NOT change any source, test, config or build file. Write documentation only.
+
+## FLOW TO DESCRIBE (in this order)
+submitClaim -> call OCR/GenAI -> call IPP -> call CCM -> (FWA: skip, see below) -> call AI
+- FWA is being retired. Do not document it. Only add one short note at the place where it sits in the flow: "FWA step exists in code at <file:line>, intentionally not documented", so nobody is surprised.
+- Services: cmic-app and cmic-ai (and any other module the flow passes through). Tell me if the real order in the code is different from the order above, with evidence. Do not force the code into my order.
+
+## ACCURACY RULES (the most important part)
+1. Follow the CURRENT code only. Read the real code. Do not rely on old documents, comments, or your memory of how such systems usually work.
+2. Never guess. If something is unclear (a rule, a status value, why a branch exists, what an external system returns, which config is used in production), do NOT fill the gap. Mark it "UNCLEAR" in the document and add it to a QUESTIONS list for me. Group your questions and ask them at the gates below.
+3. Every statement about behavior carries a reference: file name and line numbers (or class and method). If you could not verify it, write "unverified".
+4. Describe what the code DOES, including odd behavior, dead code, TODOs and workarounds. Do not describe what it should do. Do not fix or judge anything: list suspicious findings in a separate section "Observations" without changing code.
+5. Where behavior depends on configuration (SystemConfig keys, application properties, feature flags, environment), say which key, its default if visible in the repo, and what changes. Do not state production values you cannot see.
+6. No credentials, URLs with tokens, connection strings, real claim numbers, policy numbers, names or other personal data. Use placeholders (<CLAIM_NO>, <OCCURRENCE>, <POLICY_NO>).
+
+## DOCUMENT STRUCTURE
+Part 0 - How to read this document and a glossary (max 25 terms: claim, occurrence, OCR, GenAI, IPP, CCM, callback, payee, settlement, status codes, and any term you use).
+Part 1 - Overview: a one-page summary of the whole flow in plain words, a table of the steps (step | trigger | what happens | service/class that does it | what it calls | what it stores | next step), a text diagram of the end-to-end chain, and (if you can) a Mermaid sequence diagram in a code block. Include the main claim states and how the claim moves between them.
+Part 2 to N - One deep-dive section per step (submitClaim, OCR/GenAI, IPP, CCM, AI). Each section uses the same template:
+  a) Purpose in one paragraph.
+  b) Entry point: who triggers it (user action, REST endpoint, scheduler, queue, callback), with the endpoint/method and the request shape (field names only, no real data).
+  c) Step-by-step flow: numbered steps with the class and method called, the input, the output, and the decision points (if/else conditions in plain words, with the exact status values and config keys).
+  d) Data: tables and entities read or written, key columns, status fields and their meanings (only meanings you can prove from the code or from CommonCode/constants; otherwise UNCLEAR).
+  e) External calls: which system, how it is called (sync/async, timeout, retry), what happens on success, error, timeout and no response, and how the result comes back (response or callback endpoint).
+  f) Async and concurrency: threads, schedulers, queues, locks, duplicate-callback handling, idempotency. Say what protects against double processing, or "nothing found".
+  g) Failure and edge cases: what the code does on each failure, what the user or the next step sees, and whether the claim can get stuck (and in which state).
+  h) How to trace it: the log messages and loggers to search (exact text or class), the claim identifier to search with, the tables and columns to check, the status values that tell you where a claim is, and the best 3 to 5 breakpoint locations (class:method:line).
+  i) Hand-off: what exactly is passed to the next step and how.
+  j) Open questions and observations for this step.
+Part N+1 - Cross-cutting: configuration keys per step, scheduler and retry jobs, error handling and logging conventions, security/auth between services (names only, no secrets), and a table of all status values across the flow.
+Part N+2 - Debug and tracking guide: "claim is stuck at step X" checklists (what to look at in logs, tables and callbacks, in order), a table symptom -> likely place in the code -> what to check, and a worked example of tracing one claim from submit to AI with placeholders.
+Part N+3 - Open questions and observations (consolidated), each marked with owner suggestion (me, BA, another team).
+
+## HOW TO WORK (gates; I approve each one)
+Gate 1 - SURVEY (no document yet): find the entry points and the real call chain. Return: (1) the real chain with class/method/file for each hop, and any place where it differs from my order; (2) a proposed outline with the sections above filled in with the class names you expect; (3) the modules and external systems involved; (4) a list of the first QUESTIONS you already have (unclear branches, status meanings, configuration, which environments matter), each with the code reference that made you unsure and why guessing would be risky; (5) an estimate of how many sections and how long each will be. STOP and wait for my answers.
+Gate 2 - WRITE ONE SECTION AT A TIME: Part 0 and Part 1 first. After each part: show me the part in the chat (or the file path), the list of "UNCLEAR" items and "unverified" statements, and new questions. Wait for my review and answers before the next part. Update the earlier parts when my answers change them.
+Gate 3 - FINISH: the cross-cutting and debug parts, a consistency check (every status value, config key and class name mentioned exists in the code; every link/reference is valid), and a final list of everything still UNCLEAR.
+
+## WHERE AND HOW TO SAVE
+- Markdown files in a folder OUTSIDE the repository and outside anything Git tracks (tell me the exact path; prove with git status that nothing appears). If you think the document should live in the repo (for example docs/), ask me first.
+- One file per part (for example 00_overview.md, 02_submit_claim.md, 03_ocr_genai.md, 04_ipp.md, 05_ccm.md, 06_ai.md, 07_cross_cutting.md, 08_debug_guide.md) plus an index file.
+- Keep a progress log next to them (what is done, what is waiting for my answers, the question list), so we can resume if this session is lost.
+- Simple English, short sentences, one idea per sentence. Keep class, method, table and file names exactly as in the code. Explain jargon in the glossary instead of using shorthand.
+
+Start with Gate 1 only.
