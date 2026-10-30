@@ -1,1 +1,26 @@
-Answer in English. Do NOT change any file. In applyDeductTotals, a policy whose product codes contain TWO or more deduct codes gets a blank Deduct Total, even when both codes have the same limit. Confirm that. Then: (1) which test ID covers "two deduct codes with the same limit" and "two deduct codes with different limits"? If none, propose them; (2) give me a read-only SQL for the dev DB that finds OL/PA policies with more than one deduct plan code in their product codes, and counts how often that happens; (3) tell me whether the BRD or the BA reply says what to show when the two codes have the same limit; (4) add this case to the BA questions with a numeric example and your recommended default.
+I want a READABILITY refactor of the Policy Per Life code you wrote (IHS-7361). Reply in English. Some methods are too compact and hard to read (for example nested ternaries, chained calls, many conditions in one line). Readability is now more important than the fewest lines of code. For this task the ponytail "write less code" rule does NOT apply: do not shorten code, do not merge methods, and ignore any ponytail suggestion to compress.
+
+## SCOPE
+Only the methods I added or changed for this ticket in PolicyPerLifePopupHelper (and any helper you created for it): buildPopupResponse, findPlansByPlanCodes, applyProductShortNames, shortName, planShortNameByCode, applyDeductTotals, applyDeductAccumulates, isActive, split, sortRank, clean, isOlPa, and the JS functions of the popup. Do not touch existing methods of the codebase, and do not change any test.
+
+## HARD RULES
+1. NO behavior change at all: same inputs, same outputs, same null/blank handling, same number of database queries, same error handling (log and leave blank), same order of results. All approved tests must pass without any test change. If you see a bug or a doubtful rule while reading, do NOT fix it: list it separately for me.
+2. Style: one idea per statement. Replace nested or chained ternaries with if/else or a well-named local variable. Split long boolean conditions into named local variables or small private methods named after the business rule (for example hasExactlyOneDeductCode, isDeductPlan). Replace short names (k, e, limits, codes) with descriptive names. Prefer plain for-loops over clever one-liners. Comments explain WHY (the business rule or the BA decision, with its date), not what the code does.
+3. No new dependencies, no pom.xml change, no signature or public method name change that other classes use.
+4. Production code stays independent of the tests; no production change made only for testing.
+5. Files outside this ticket stay untouched (pom.xml, CXFConfig.java, ClaimHelper, ClinicalConsultantHelper, IppHelper, DatasourceConfig).
+
+## SHOW BEFORE YOU EDIT (the most important rule)
+- You must NOT modify any file until I approve that specific change. Everything is shown in this chat first.
+- For every method, show in the chat, in a code block: the CURRENT code (BEFORE), the PROPOSED code (AFTER), and under them:
+  a) a plain-English explanation of what is hard to read now and what you changed (max 4 lines),
+  b) "Behavior check": a small table of 4 to 6 input cases (including null, blank, empty list, two codes, same limit) with the result of BEFORE and the result of AFTER, which must be identical,
+  c) which approved test IDs cover it.
+- If you cannot show a clean BEFORE/AFTER in the chat because the method is long, split it into parts and show each part.
+
+## FLOW (I approve each gate)
+1. PROPOSAL GATE: first a table: method | what makes it hard to read | planned change | risk (low/medium). Then show BEFORE/AFTER for ALL listed methods in the chat, in this order: applyDeductTotals, planShortNameByCode, shortName, applyProductShortNames, applyDeductAccumulates, isActive, buildPopupResponse, findPlansByPlanCodes, split and sortRank, clean and isOlPa, then the JS. Methods that are already easy to read: say "no change" and why. Do not edit any file. STOP and wait for my approval.
+2. After my OK (I may approve all, or approve some and change others), refactor ONE method at a time. For each method: apply exactly the approved AFTER (if you want to deviate, STOP and show the new version in the chat first), run the related tests, and show in the chat: tests run/passed/failed/skipped and the real diff. Wait for my "next". If a test fails, revert that change and tell me why.
+3. At the end: a full test run, the list of changed files in two groups ([MAIN] and [TEST]; the TEST group must be empty), confirmation that the query count is unchanged, the doubtful rules you noticed but did not change, and an update of the IHS-7361 status log, journal and review document (only the descriptions that changed).
+
+Start with the PROPOSAL GATE only, and edit nothing.
