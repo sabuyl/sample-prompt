@@ -1,0 +1,24 @@
+Context: IHS-7361 Story #3 (auto claim transfer engine). Sources: BRD v1.5, Pending-Questions.md, Story #2 branch origin/feature/david-y26-5-dev (read only), the Excel StatusLogic and the journey diagram.
+
+Analysis only. Do not edit any file.
+
+I am losing the big picture. Give me a ONE-PAGE summary in plain English, max ~400 words, no tables longer than 8 rows.
+
+1. Requirement (5–7 bullets)
+   - What problem Story #3 solves, in one sentence.
+   - What triggers the engine.
+   - What the engine produces (new claim, sequence/journey status changes).
+   - What is out of scope (Story #2, Story #6, Pre-Auth).
+
+2. Processing steps (numbered, one line each)
+   From "claim of the current sequence reaches the trigger status" to "journey complete".
+   For each step: what the system does, and the main method or class if it already exists in the code (Story #2 or cmic-app), else "new".
+   Mark a step [TBC – Qx] only if an open question changes it; do not explain the question.
+
+3. What I can start coding now
+   The happy path steps that do not depend on any open question.
+
+4. Top 3 blockers
+   Only the open questions that would block the happy path. One line each, with the owner (BA / IT / David).
+
+Use placeholders such as <CLAIM_NO>; no real data.
